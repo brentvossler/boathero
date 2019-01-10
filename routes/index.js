@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var csrf = require('csurf');
-passport = require('passport');  
+passport = require('passport'); 
+var Cart = require('../models/cart'); 
 
 var csrfProtection = csrf();
 router.use(csrfProtection);
@@ -45,6 +46,21 @@ router.post('/signin', passport.authenticate('local.signin', {
 	failureRedirect: '/signin',
 	failureFlash: true
 }));
+
+router.get('/addToCart/:id', function(req, res, next) {
+	var productID = req.params.id
+	var cart = new Cart(req.session.cart ? req.session.cart : {});
+
+	Product.findById(productId, function(err, product) {
+		if(err) {
+			return res.redirect('/');
+		}
+		cart.add(product, product.id);
+		req.session.cart = cart;
+		console.log(req.session.cart);
+		res.redirect('/');
+	});
+});
 
 module.exports = router;
 
